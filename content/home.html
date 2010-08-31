@@ -34,7 +34,18 @@
       var REFRESH_INTERVAL = 600*1000;
       var hourBins = [];
       var keywordBins = {};
-      var keywords = ["comcast", "gmx.de", "gmail", "roadrunner", "yahoo"];
+      /*
+gmx
+gmail
+googlemail
+yahoo
+comcast
+road runner
+roadrunner
+msn
+hotmail
+       */
+      var keywords = ["gmx", "g((oogle)? ?)mail", "yahoo", "comcast", "road ?runner", "msn", "hotmail"]
       // Uncomment below to fill some debug values
       /*for each (let i in range(0, 24))
         hourBins[i] = Math.random() * 100;
@@ -383,75 +394,114 @@
     });
   </script>
   <style>
+
+    html {
+      margin: 0;
+      border: 0;
+    }
+
     body {
-      font-family: sans-serif;
+      font-family: "Lucida Grande", sans-serif;
+      font-size: small;
+      background-color: #ECF3FE;
+      color: #0A0A0A;
+      margin: 0;
+      border: 0;
     }
 
     h1 {
-      text-align: center;
-      border: 5px solid #ccc;
-      -moz-border-radius: 5px;
-      border-radius: 5px;
-      padding: 10px;
+      background-image:-moz-linear-gradient(center top , #FCFCFC 0%, #E6E6E6 100%);
+      border-bottom:1px solid #BEBEBE;
+      color:#0A0A0A;
+      padding:5px 10px;
+      margin: 0;
+    }
+
+    .wrapper {
+      padding: 20px;
+    }
+
+    h2 {
+      border-bottom: 2px solid #0A0A0A;
     }
 
     .graph {
+      -moz-border-radius:5px 5px 5px 5px;
+      -moz-box-shadow:0 1px 2px #CCE0FF;
+      background-color:#FFFFFF;
+      background-image:-moz-linear-gradient(center top , #FFFFFF 0%, #FAFAFA 100%);
+      border:1px solid #BEBEBE;
       float: right;
       text-align: center;
+      padding: 10px;
     }
 
     .legend {
       font-size: small;
       font-style: italic;
     }
+
+    a {
+      color: #3875D7;
+      text-decoration: none;
+    }
+
+    a:hover {
+    }
+  
+
   </style>
 </head>
 <body>
   <h1>Roland @MoMo's dashboard</h1>
-  <div class="status">Working...</div>
-  <div class="graph">
-    <div id="comment_pattern">
-      Please wait...
+  <div class="wrapper">
+    <div>
+      <span class="status">Working...</span> - <a href="http://getsatisfaction.com/mozilla_messaging/">go go get satisfaction!</a>
     </div>
-    <div class="legend">
-      Comment pattern today, total = <span id="n_comments"></span>
+    <div class="graph">
+      <div id="comment_pattern">
+        Please wait...
+      </div>
+      <div class="legend">
+        Comment pattern today, total = <span id="n_comments"></span>
+      </div>
+      <br />
+      <br />
+      <br />
+      <div id="keyword_pattern">
+        Please wait...
+      </div>
+      <br />
+      <br />
+      <div class="legend">
+        Hot keywords today
+      </div>
     </div>
-    <br />
-    <br />
-    <br />
-    <div id="keyword_pattern">
-      Please wait...
+    <h2>Most active topics in the last 24 hours</h2>
+    <div class="d1">
+      <ol>
+      </ol>
     </div>
-    <br />
-    <br />
-    <div class="legend">
-      Hot keywords today
+    <h2>Last 5 created topics</h2>
+    <div class="d2">
+      <ol>
+      </ol>
     </div>
-  </div>
-  <h2>Most active topics in the last 24 hours</h2>
-  <div class="d1">
-    <ol>
-    </ol>
-  </div>
-  <h2>Last 5 created topics</h2>
-  <div class="d2">
-    <ol>
-    </ol>
-  </div>
-  <h2>Random five created today</h2>
-  <div class="d3">
-    <ol>
-    </ol>
-  </div>
-  <h2>Recently solved topics</h2>
-  <div class="d4">
-    <ol>
-    </ol>
-  </div>
-  <h2>Last active solved topics</h2>
-  <div class="d5">
-    <ol>
-    </ol>
+    <h2>Random five created today</h2>
+    <div class="d3">
+      <ol>
+      </ol>
+    </div>
+    <h2>Recently solved topics</h2>
+    <div class="d4">
+      <ol>
+      </ol>
+    </div>
+    <h2>Last active solved topics</h2>
+    <div class="d5">
+      <ol>
+      </ol>
+    </div>
   </div>
 </body>
 </html>
