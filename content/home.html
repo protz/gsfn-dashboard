@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script type="application/javascript;version=1.8">
+    /*  TODO
+     * So far, there are a few things that we could improve with this scripts.
+     * - Use a cache. If last time we checked the topic, it had N replies, and
+     *   10 minutes later, it still has N replies, then we don't need to go
+     *   through the N replies to figure out that the number of replies today
+     *   hasn't changed (I assume it's not possible to delete a reply, but that
+     *   doesn' matter much).
+     *
+     */
+    if (typeof console === 'undefined' || !console.log) {
+      var console = { log: function () {}};
+    };
+
+    $(window).load(function () {
+
+      $.ajaxSetup({
+        cache: false // turn off AJAX caching so you actually get the top 5!
+      });
+
+      var topics = {};
+      var REFRESH_INTERVAL = 600*1000;
+
+      var today = (new Date());
+      function tooOld(date) {
+        let d = new Date(date);
+        return ((today - d) > 24 * 3600 * 1000);
+      }
+
+      // -- Display routines
+
+      function output() {
+        // Most active in the last 24 hours
+        let sorted_topics = [t for each ([, t] in Iterator(topics))];
+        sorted_topics.sort(function (t1, t2) {
+          return (t2.replies_today - t1.replies_today);
+        });
+        let $ol = $(".d1").find("ol");
+        $ol.empty(); // remove any leftover values
+        $.each(sorted_topics, function (i, topic) {
+          $ol.append(
+            $("<li />").append(
+              $("<a />").attr("href", topic.at_sfn).text(topic.subject)
+            ).append(
+              $("<span />").text(" ("+topic.replies_today+" replie(s))")
+            )
+          );
+          if (i == 4)
+            return false;
+        });
+
+        // Since we've been fetching all topics modified in the last 24 hours,
+        // topics recently created are inside that subset.
+        let last_topics = sorted_topics.concat();
+        last_topics.sort(function (t1, t2) {
+          return ((new Date(t1.created_at)) < (new Date(t2.created_at)));
+        });
+        $ol = $(".d2").find("ol");
+        $ol.empty(); // remove any leftover values
+        $.each(last_topics, function (i, topic) {
+          var minutesAgo = Math.round((new Date() - new Date(topic.created_at))/60000);
+          $ol.append(
+            $("<li />").append(
+              $("<a />").attr("href", topic.at_sfn).text(topic.subject)
+            ).append(
+              $("<span />").text(" (created "+minutesAgo+" minute(s) ago)")
+            )
+          );
+          if (i == 4)
+            return false;
+        });
+
+        // Get topics created today
+        let todays_topics = sorted_topics.filter(function (topic) { return !tooOld(topic.created_at); });
+        // shuffle algorithm
+        let l = todays_topics.length;
+        for (let i = l - 1; i >= 0; i--) {
+          let j = Math.round(Math.random()*i);
+          let t = todays_topics[i];
+          todays_topics[i] = todays_topics[j];
+          todays_topics[j] = t;
+        }
+        $ol = $(".d3").find("ol");
+        $ol.empty(); // remove any leftover values
+        $.each(todays_topics, function (i, topic) {
+          var date = new Date(topic.created_at).toLocaleFormat("%m/%d @%H:%I");
+          $ol.append(
+            $("<li />").append(
+              $("<a />").attr("href", topic.at_sfn).text(topic.subject)
+            ).append(
+              $("<span />").text(" (created "+date+")")
+            )
+          );
+          if (i == 4)
+            return false;
+        });
+
+        // Topics solved are a subset of today's topics
+        let solved_topics = sorted_topics.filter(function (topic) { return (topic.status == "complete"); });
+        $ol = $(".d5").find("ol");
+        $ol.empty(); // remove any leftover values
+        $.each(solved_topics, function (i, topic) {
+          var date = new Date(topic.last_active_at).toLocaleFormat("%m/%d @%H:%I");
+          $ol.append(
+            $("<li />").append(
+              $("<a />").attr("href", topic.at_sfn).text(topic.subject)
+            ).append(
+              $("<span />").text(" (last active at "+date+")")
+            )
+          );
+          if (i == 4)
+            return false;
+        });
+
+        // Topics solved in the last 10 minutes are a subset of solved topics
+        let recently_solved_topics = solved_topics.filter(function (topic) { return topic.just_solved; });
+        $ol = $(".d4").find("ol");
+        $.each(recently_solved_topics, function (i, topic) {
+          var date = new Date().toLocaleFormat("%m/%d @%H:%I");
+          $ol.prepend(
+            $("<li />").append(
+              $("<a />").attr("href", topic.at_sfn).text(topic.subject)
+            ).append(
+              $("<span />").text(" (solved sometime before "+date+")")
+            )
+          );
+          if (i == 4)
+            return false;
+        });
+
+
+        $(".status").text("Next update @"+(new Date((new Date())+REFRESH_INTERVAL)).toLocaleDateString("%H:%I"));
+      }
+
+      // -- JSON stuff
+
+      var expected = 1; // for the main loop
+
+      function top() {
+        expected--;
+        if (expected == 0) {
+          output();
+        } else if (expected < 0) {
+          console.log("Errrrrrrrrror");
+        }
+      }
+
+      function getTopics(page){
+        console.log("getTopics", page);
+
+        // tell Roland we're not dead yet
+        $(".status").text($(".status").text()+".");
+
+        var url =
+          "http://api.getsatisfaction.com/products/mozilla_thunderbird/topics.json?sort=recently_active&page="
+          + page + "&limit=30&callback=?";
+        $.getJSON(
+          url,
+          function _getTopics_loop (gsjs) { // gsjs is the JSON object from getsatisfaction
+            var keep_going = true;
+
+            // iterate on all topics
+            $.each(gsjs.data, function(i, topic) {
+              // we've been too far, and we ended up in some other day's topics
+              if (tooOld(topic.last_active_at)) {
+                keep_going = false;
+                return false; // break
+              }
+              topic.replies_today = 0;
+              let oldStatus = topics[topic.id] && topics[topic.id].status; // false or null or "pending" or whatever
+              topics[topic.id] = topic;
+              if (oldStatus != "complete" && topic.status == "complete")
+                topics.just_solved = true;
+              if (topic.reply_count > 1) {
+                expected++;
+                getReplies(topic, topic.reply_count - 1, 1);
+              }
+            });
+
+            if (keep_going && gsjs.data.length)
+              getTopics(page + 1);
+            else
+              top();
+        });
+      };
+
+      function getReplies(topic, remaining, page) {
+        console.log("getReplies", topic, remaining, page);
+
+        // update the UI
+        $(".status").text($(".status").text()+".");
+
+        var url =
+          "http://api.getsatisfaction.com/topics/" +topic.id +
+          "/replies.json?sort=recently_created&page=" + page + "&limit=30&callback=?";
+        $.getJSON(
+          url,
+          function _getReplies_loop (gsjs) { //gsjs is the JSON object from getsatisfaction
+            var keep_going = true;
+
+            // iterate on all replies
+            $.each(gsjs.data, function(i, reply) {
+              if (tooOld(reply.created_at)) {
+                keep_going = false;
+                return false;
+              } else {
+                topic.replies_today++;
+                remaining--;
+              }
+            });
+
+            if (remaining <= 0)
+              keep_going = false;
+
+            if (keep_going && gsjs.data.length)
+              getReplies(topic, remaining, page + 1);
+            else
+              top();
+          }
+        );
+
+      };
+
+      // Called every ten minutes to update the UI
+      function poll () {
+        expected = 1;
+        getTopics(1);
+
+        setTimeout(poll, REFRESH_INTERVAL);
+      }
+
+      poll();
+
+    });
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      border: 5px solid #ccc;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Roland @MoMo's dashboard</h1>
+  <div class="status">Working...</div>
+  <h2>Most active topics in the last 24 hours</h2>
+  <div class="d1">
+    <ol>
+    </ol>
+  </div>
+  <h2>Last 5 created topics</h2>
+  <div class="d2">
+    <ol>
+    </ol>
+  </div>
+  <h2>Random five created today</h2>
+  <div class="d3">
+    <ol>
+    </ol>
+  </div>
+  <h2>Recently solved topics</h2>
+  <div class="d4">
+    <ol>
+    </ol>
+  </div>
+  <h2>Last active solved topics</h2>
+  <div class="d5">
+    <ol>
+    </ol>
+  </div>
+</body>
+</html>
