@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="protovis-3.2/protovis-d3.2.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script type="application/javascript;version=1.8" src="colorUtils.js"></script>
   <script type="application/javascript;version=1.8">
     /*  TODO
      * So far, there are a few things that we could improve with this scripts.
@@ -21,9 +23,23 @@
       $.ajaxSetup({
         cache: false // turn off AJAX caching so you actually get the top 5!
       });
+      
+      function range(begin, end) {
+        for (let i = begin; i < end; ++i) {
+          yield i;
+        }
+      }
 
       var topics = {};
       var REFRESH_INTERVAL = 600*1000;
+      var hourBins = [];
+      var keywordBins = {};
+      var keywords = ["comcast", "gmx.de", "gmail", "roadrunner", "yahoo"];
+      // Uncomment below to fill some debug values
+      /*for each (let i in range(0, 24))
+        hourBins[i] = Math.random() * 100;
+      for each (let i in keywords)
+        keywordBins[i] = 10 * Math.random();*/
 
       var today = (new Date());
       function tooOld(date) {
@@ -87,7 +103,7 @@
         $ol = $(".d3").find("ol");
         $ol.empty(); // remove any leftover values
         $.each(todays_topics, function (i, topic) {
-          var date = new Date(topic.created_at).toLocaleFormat("%m/%d @%H:%I");
+          var date = new Date(topic.created_at).toLocaleFormat("%I:%M%p");
           $ol.append(
             $("<li />").append(
               $("<a />").attr("href", topic.at_sfn).text(topic.subject)
@@ -100,11 +116,12 @@
         });
 
         // Topics solved are a subset of today's topics
+        sorted_topics.sort(function (t1, t2) { return ((new Date(t1.last_active_at)) < (new Date(t2.last_active_at))); });
         let solved_topics = sorted_topics.filter(function (topic) { return (topic.status == "complete"); });
         $ol = $(".d5").find("ol");
         $ol.empty(); // remove any leftover values
         $.each(solved_topics, function (i, topic) {
-          var date = new Date(topic.last_active_at).toLocaleFormat("%m/%d @%H:%I");
+          var date = new Date(topic.last_active_at).toLocaleFormat("%I:%M%p");
           $ol.append(
             $("<li />").append(
               $("<a />").attr("href", topic.at_sfn).text(topic.subject)
@@ -120,7 +137,7 @@
         let recently_solved_topics = solved_topics.filter(function (topic) { return topic.just_solved; });
         $ol = $(".d4").find("ol");
         $.each(recently_solved_topics, function (i, topic) {
-          var date = new Date().toLocaleFormat("%m/%d @%H:%I");
+          var date = new Date().toLocaleFormat("%I:%M%p");
           $ol.prepend(
             $("<li />").append(
               $("<a />").attr("href", topic.at_sfn).text(topic.subject)
@@ -133,7 +150,118 @@
         });
 
 
-        $(".status").text("Next update @"+(new Date((new Date())+REFRESH_INTERVAL)).toLocaleDateString("%H:%I"));
+        $(".status").text("Last update @"+(new Date()).toLocaleFormat("%I:%M%p"));
+      }
+
+      function temperature(time, value) {
+        /* this function is a quick hack trying to make noon be hot, and midnight
+          be cold */
+        let hue = (235 + 120 * (1-Math.abs(time - 12) / 12)) % 360;
+        hue = hue / 360;
+        let saturation = .8; // avoid being garish
+        let lightness = .3;
+        c = hsla(hue, saturation, lightness, 1);
+        return c;
+      }
+
+      function graph() {
+        console.log("Graphing...");
+        $("#n_comments").text(pv.sum(hourBins));
+
+        let max = -1;
+        for (let i in range(0, 24))
+          if (hourBins[i] > max)
+            max = hourBins[i];
+        let panel = new pv.Panel();
+        let padding = 30;
+        panel
+          .canvas(document.getElementById("comment_pattern"))
+          .width(12*24+padding*2)
+          .height(100)
+          .add(pv.Bar)
+            .data(hourBins)
+            .bottom(padding)
+            .width(10)
+            .fillStyle(function(d) temperature(this.index/2, d/100).toHex())
+            .height(function(d) d * 80 / max)
+            .left(function() this.index * 12 + padding);
+        panel.add(pv.Bar)
+          .left(padding)
+          .bottom(padding)
+          .width(0)
+          .height(0)
+          .anchor('bottom')
+          .add(pv.Label)
+          .textAlign('left')
+          .textBaseline('top')
+          .text("early morning");
+        panel.add(pv.Bar)
+          .left(12*11+padding)
+          .bottom(padding)
+          .width(0)
+          .height(0)
+          .anchor('bottom')
+          .add(pv.Label)
+          .textAlign('left')
+          .textBaseline('top')
+          .text("noon");
+        panel.add(pv.Bar)
+          .right(padding)
+          .bottom(padding)
+          .width(0)
+          .height(0)
+          .anchor('bottom')
+          .add(pv.Label)
+          .textAlign('right')
+          .textBaseline('top')
+          .text("evening");
+        panel
+          .add(pv.Rule)
+            .data([max])
+            .top(1)
+            .left(padding-5)
+            .width(5)
+            .strokeStyle("#000")
+          .add(pv.Label)
+            .textBaseline("top")
+            .textAlign("right")
+            .text(function (d) ""+d);
+          
+        panel.root.render();
+
+        let total = 0;
+        for each (let [k, v] in Iterator(keywordBins))
+          total += v;
+        let angle = 0;
+        let data = [];
+        for each (let [k, v] in Iterator(keywordBins)) {
+          data.push([k, v / total * 2 * Math.PI, Math.round(v)]);
+          angle += v / total * 2 * Math.PI;
+        }
+
+        /* The root panel. */
+        var w = 200, h = 200;
+        var vis = new pv.Panel()
+            .canvas("keyword_pattern")
+            .width(w)
+            .height(h);
+
+        /* The wedge, with centered label. */
+        vis.add(pv.Wedge)
+            .data(data)
+            .bottom(w / 2)
+            .left(w / 2)
+            .innerRadius(0)
+            .outerRadius(w / 2)
+            .angle(function (d) d[1])
+          .anchor("center").add(pv.Label)
+            .visible(function(d) d[1] > .15)
+            .textAngle(0)
+            .text(function(d) d[0] + "("+d[2]+")");
+
+        vis.root.render();
+
+        console.log("More graphing...");
       }
 
       // -- JSON stuff
@@ -144,6 +272,7 @@
         expected--;
         if (expected == 0) {
           output();
+          graph();
         } else if (expected < 0) {
           console.log("Errrrrrrrrror");
         }
@@ -170,11 +299,12 @@
                 keep_going = false;
                 return false; // break
               }
+              // is this a newly solved topic?
+              if ((topic.id in topics) && topics[topic.id].status != "complete" && topic.status == "complete")
+                topic.just_solved = true;
+              // add some properties, erase the old topic
               topic.replies_today = 0;
-              let oldStatus = topics[topic.id] && topics[topic.id].status; // false or null or "pending" or whatever
               topics[topic.id] = topic;
-              if (oldStatus != "complete" && topic.status == "complete")
-                topics.just_solved = true;
               if (topic.reply_count > 1) {
                 expected++;
                 getReplies(topic, topic.reply_count - 1, 1);
@@ -208,6 +338,13 @@
                 keep_going = false;
                 return false;
               } else {
+                // Fill the bins
+                hourBins[(new Date(reply.created_at)).getHours()]++;
+                for each (let [, keyword] in Iterator(keywords)) {
+                  let match = reply.content.match(new RegExp(keyword, "gi"));
+                  if (match)
+                    keywordBins[keyword] += match.length;
+                }
                 topic.replies_today++;
                 remaining--;
               }
@@ -227,13 +364,21 @@
 
       // Called every ten minutes to update the UI
       function poll () {
+        // reset globals
         expected = 1;
+        for each (let i in range(0, 24))
+          hourBins[i] = 0;
+        for each (let [, keyword] in Iterator(keywords))
+          keywordBins[keyword] = 0;
+
         getTopics(1);
 
         setTimeout(poll, REFRESH_INTERVAL);
       }
 
       poll();
+      // For debug
+      //graph();
 
     });
   </script>
@@ -249,11 +394,40 @@
       border-radius: 5px;
       padding: 10px;
     }
+
+    .graph {
+      float: right;
+      text-align: center;
+    }
+
+    .legend {
+      font-size: small;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
   <h1>Roland @MoMo's dashboard</h1>
   <div class="status">Working...</div>
+  <div class="graph">
+    <div id="comment_pattern">
+      Please wait...
+    </div>
+    <div class="legend">
+      Comment pattern today, total = <span id="n_comments"></span>
+    </div>
+    <br />
+    <br />
+    <br />
+    <div id="keyword_pattern">
+      Please wait...
+    </div>
+    <br />
+    <br />
+    <div class="legend">
+      Hot keywords today
+    </div>
+  </div>
   <h2>Most active topics in the last 24 hours</h2>
   <div class="d1">
     <ol>
