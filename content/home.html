@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/png" href="favicon.png" />
   <script src="protovis-3.2/protovis-d3.2.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
   <script type="application/javascript;version=1.8" src="colorUtils.js"></script>
@@ -160,7 +161,8 @@ hotmail
           if (i == 4)
             return false;
         });
-
+        if (recently_solved_topics.length)
+          $("#clap").get(0).play();
 
         $(".status").text("Last update @"+(new Date()).toLocaleFormat("%I:%M%p"));
       }
@@ -465,6 +467,7 @@ hotmail
     <div>
       <span class="status">Working...</span> - <a href="http://getsatisfaction.com/mozilla_messaging/">go go get satisfaction!</a>
     </div>
+    <audio src="clap.ogg" id="clap"></audio>
     <div class="graph">
       <div id="comment_pattern">
         Please wait...
