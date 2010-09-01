@@ -12,6 +12,7 @@
      *   through the N replies to figure out that the number of replies today
      *   hasn't changed (I assume it's not possible to delete a reply, but that
      *   doesn' matter much).
+     * - Search keywords inside tags for topics (requires more queries)
      *
      */
     if (typeof console === 'undefined' || !console.log) {
@@ -316,6 +317,12 @@ hotmail
               // add some properties, erase the old topic
               topic.replies_today = 0;
               topics[topic.id] = topic;
+              // match keywords
+              for each (let [, keyword] in Iterator(keywords)) {
+                let match = topic.content.match(new RegExp(keyword, "gi"));
+                if (match)
+                  keywordBins[keyword] += match.length;
+              }
               if (topic.reply_count > 1) {
                 expected++;
                 getReplies(topic, topic.reply_count - 1, 1);
