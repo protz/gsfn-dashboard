@@ -154,6 +154,8 @@ $(window).load(function () {
         return false;
     });
 
+    if (recently_solved_topics.length)
+      $("#clap").get(0).play();
 
     $(".status").text("Last update @"+(new Date()).toLocaleFormat("%I:%M%p"));
   }
