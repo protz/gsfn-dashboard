@@ -9,7 +9,7 @@
  *
  */
 if (typeof console === 'undefined' || !console.log) {
-  var console = { log: function () {}};
+  window.console = { log: function () {}};
 };
 
 $(window).load(function () {
@@ -24,10 +24,11 @@ $(window).load(function () {
     }
   }
 
-  var topics = {};
-  var REFRESH_INTERVAL = 600*1000;
-  var hourBins = [];
-  var keywordBins = {};
+  let topics = {};
+  let tags = {};
+  let REFRESH_INTERVAL = 600*1000;
+  let hourBins = [];
+  let keywordBins = {};
   /*
   gmx
   gmail
@@ -39,20 +40,28 @@ $(window).load(function () {
   msn
   hotmail
    */
-  var keywords = ["gmx", "g((oogle)? ?)mail", "yahoo", "comcast", "road ?runner", "msn", "hotmail"]
+  let keywords = ["gmx", "g((oogle)? ?)mail", "yahoo", "comcast", "road ?runner", "msn", "hotmail"]
   // Uncomment below to fill some debug values
   /*for each (let i in range(0, 24))
     hourBins[i] = Math.random() * 100;
   for each (let i in keywords)
     keywordBins[i] = 10 * Math.random();*/
 
-  var today = (new Date());
+  let today = (new Date());
   function tooOld(date) {
     let d = new Date(date);
     return ((today - d) > 24 * 3600 * 1000);
   }
 
   // -- Display routines
+
+  function plural(s, n) {
+    let map = {
+      reply: "replies",
+      minute: "minutes",
+    };
+    return (n > 1 ? map[s] : s);
+  }
 
   function output() {
     // Most active in the last 24 hours
@@ -67,7 +76,9 @@ $(window).load(function () {
         $("<li />").append(
           $("<a />").attr("href", topic.at_sfn).text(topic.subject)
         ).append(
-          $("<span />").text(" ("+topic.replies_today+" replie(s))")
+          $("<span />").text(
+            " ("+topic.replies_today+" "+plural("reply", topic.replies_today)+")"
+          )
         )
       );
       if (i == 4)
@@ -83,12 +94,12 @@ $(window).load(function () {
     $ol = $(".d2").find("ol");
     $ol.empty(); // remove any leftover values
     $.each(last_topics, function (i, topic) {
-      var minutesAgo = Math.round((new Date() - new Date(topic.created_at))/60000);
+      let minutesAgo = Math.round((new Date() - new Date(topic.created_at))/60000);
       $ol.append(
         $("<li />").append(
           $("<a />").attr("href", topic.at_sfn).text(topic.subject)
         ).append(
-          $("<span />").text(" (created "+minutesAgo+" minute(s) ago)")
+          $("<span />").text(" (created "+minutesAgo+" "+plural("minute", minutesAgo)+" ago)")
         )
       );
       if (i == 4)
@@ -108,7 +119,7 @@ $(window).load(function () {
     $ol = $(".d3").find("ol");
     $ol.empty(); // remove any leftover values
     $.each(todays_topics, function (i, topic) {
-      var date = new Date(topic.created_at).toLocaleFormat("%I:%M%p");
+      let date = new Date(topic.created_at).toLocaleFormat("%I:%M%p");
       $ol.append(
         $("<li />").append(
           $("<a />").attr("href", topic.at_sfn).text(topic.subject)
@@ -126,7 +137,7 @@ $(window).load(function () {
     $ol = $(".d5").find("ol");
     $ol.empty(); // remove any leftover values
     $.each(solved_topics, function (i, topic) {
-      var date = new Date(topic.last_active_at).toLocaleFormat("%I:%M%p");
+      let date = new Date(topic.last_active_at).toLocaleFormat("%I:%M%p");
       $ol.append(
         $("<li />").append(
           $("<a />").attr("href", topic.at_sfn).text(topic.subject)
@@ -142,7 +153,7 @@ $(window).load(function () {
     let recently_solved_topics = solved_topics.filter(function (topic) { return topic.just_solved; });
     $ol = $(".d4").find("ol");
     $.each(recently_solved_topics, function (i, topic) {
-      var date = new Date().toLocaleFormat("%I:%M%p");
+      let date = new Date().toLocaleFormat("%I:%M%p");
       $ol.prepend(
         $("<li />").append(
           $("<a />").attr("href", topic.at_sfn).text(topic.subject)
@@ -171,8 +182,7 @@ $(window).load(function () {
     return c;
   }
 
-  function graph() {
-    console.log("Graphing...");
+  function graphCommentPattern () {
     $("#n_comments").text(pv.sum(hourBins));
 
     let max = -1;
@@ -236,7 +246,9 @@ $(window).load(function () {
         .text(function (d) ""+d); */
       
     panel.root.render();
+  }
 
+  function graphKeywords() {
     let total = 0;
     for each (let [k, v] in Iterator(keywordBins))
       total += v;
@@ -248,8 +260,8 @@ $(window).load(function () {
     }
 
     /* The root panel. */
-    var w = 180, h = 180;
-    var vis = new pv.Panel()
+    let w = 180, h = 180;
+    let vis = new pv.Panel()
         .canvas("keyword_pattern")
         .width(w)
         .height(h);
@@ -268,13 +280,65 @@ $(window).load(function () {
         .text(function(d) d[0] + "("+d[2]+")");
 
     vis.root.render();
+  }
 
-    console.log("More graphing...");
+  function cleanup (s) {
+    let r = s.replace(/(add-ons?|addons|emails|e-mails?|!|messages|are|can|with|the|that|not|and|can't|will|(^\d+$))/g, function (s) {
+      switch (s) {
+        case "add-ons":
+        case "add-on":
+        case "addons":
+          return "addon";
+        case "e-mail":
+        case "e-mails":
+        case "emails":
+          return "email";
+        case "!":
+          return "";
+        case "messages":
+          return "message";
+        default:
+          return "";
+      }
+    });
+    return (r.length > 2 ? r : "");
+  }
+
+  function graphTagCloud() {
+    let sorted_tags = [x for each ([, x] in Iterator(tags))];
+    let sub_tag_count = {};
+    $.each(sorted_tags, function (i, tag_list) {
+      let sub_tags = tag_list[0].name.split(" ");
+      sub_tags = sub_tags.map(cleanup);
+      $.each(sub_tags, function (i, sub_tag) {
+        if (!(sub_tag in sub_tag_count))
+          sub_tag_count[sub_tag] = 0;
+        sub_tag_count[sub_tag]++;
+      });
+    });
+    sub_tag_count = [[k, v] for each ([k, v] in Iterator(sub_tag_count))];
+    sub_tag_count.sort(function ([k1,], [k2,]) String.localeCompare(k1, k2));
+    let $box = $("#tag_cloud");
+    $box.empty();
+    $.each(sub_tag_count, function (i, [k, v]) {
+      if (v > 1 && k.length) {
+        let $tag = $("<span />")
+          .text(k+" ")
+          .css("font-size", 8+v);
+        $box.append($tag);
+      }
+    });
+  }
+
+  function graph () {
+    graphCommentPattern();
+    graphKeywords();
+    graphTagCloud();
   }
 
   // -- JSON stuff
 
-  var expected = 1; // for the main loop
+  let expected = 1; // for the main loop
 
   function top() {
     expected--;
@@ -289,16 +353,13 @@ $(window).load(function () {
   function getTopics(page){
     console.log("getTopics", page);
 
-    // tell Roland we're not dead yet
-    // $(".status").text($(".status").text()+".");
-
-    var url =
+    let url =
       "http://api.getsatisfaction.com/products/mozilla_thunderbird/topics.json?sort=recently_active&page="
       + page + "&limit=30&callback=?";
     $.getJSON(
       url,
       function _getTopics_loop (gsjs) { // gsjs is the JSON object from getsatisfaction
-        var keep_going = true;
+        let keep_going = true;
 
         // iterate on all topics
         $.each(gsjs.data, function(i, topic) {
@@ -321,7 +382,9 @@ $(window).load(function () {
           }
           if (topic.reply_count > 1) {
             expected++;
+            expected++;
             getReplies(topic, topic.reply_count - 1, 1);
+            getTags(topic);
           }
         });
 
@@ -338,13 +401,13 @@ $(window).load(function () {
     // update the UI
     // $(".status").text($(".status").text()+".");
 
-    var url =
+    let url =
       "http://api.getsatisfaction.com/topics/" +topic.id +
       "/replies.json?sort=recently_created&page=" + page + "&limit=30&callback=?";
     $.getJSON(
       url,
       function _getReplies_loop (gsjs) { //gsjs is the JSON object from getsatisfaction
-        var keep_going = true;
+        let keep_going = true;
 
         // iterate on all replies
         $.each(gsjs.data, function(i, reply) {
@@ -373,13 +436,32 @@ $(window).load(function () {
           top();
       }
     );
-
   };
+
+  function getTags(topic) {
+    console.log("getTags", topic);
+
+    let url =
+      "http://api.getsatisfaction.com/topics/" +topic.id +
+      "/tags.json?callback=?";
+    $.getJSON(
+      url,
+      function _getTags (gsjs) { // we assume no more than one page of tags
+        $.each(gsjs.data, function(i, tag) {
+          if (!(tag.name in tags))
+            tags[tag.name] = [];
+          tags[tag.name].push(tag);
+        });
+        top();
+      }
+    );
+  }
 
   // Called every ten minutes to update the UI
   function poll () {
     // reset globals
     expected = 1;
+    tags = {};
     for each (let i in range(0, 24))
       hourBins[i] = 0;
     for each (let [, keyword] in Iterator(keywords))

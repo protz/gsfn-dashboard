@@ -117,7 +117,8 @@ h2 {
 }
 
 .graph #comment_pattern,
-.graph #keyword_pattern {
+.graph #keyword_pattern,
+.graph #tag_cloud {
   width: 100%;
   text-align: center;
   padding: 9px;
@@ -137,6 +138,10 @@ img.centered {
   margin-top: -8px;
   margin-left: -8px;
   position: absolute;
+}
+
+#tag_cloud {
+  overflow: auto;
 }
 
 /*
