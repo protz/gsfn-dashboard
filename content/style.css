@@ -76,8 +76,8 @@ a:hover {
 
 .wrapper {
   width: 962px;
-  border-left: 1px solid #e6e6e6;
-  border-right: 1px solid #e6e6e6;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
   margin: 0 auto;
   min-height: 100%;
   background-color: #fff;
@@ -102,11 +102,18 @@ a:hover {
 
 h2 {
   font-size: 12px;
+  background-color: #fafafa;
+  border: 1px solid #ddd;
+  color: #888;
+  padding: 5px 10px;
+  -moz-border-radius: 5px 5px 0 0;
+  -webkit-border-radius: 5px 5px 0 0;
 }
 
 .graph {
-  border-top: 1px solid #e6e6e6;
-  border-bottom: 1px solid #e6e6e6;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  background-color: #F5FCFC;
 }
 
 .graph #comment_pattern,
@@ -115,15 +122,16 @@ h2 {
   text-align: center;
   padding: 9px;
   height: 200px;
-  border: 1px solid #e6e6e6;
-  background-color: #fafafa;
-  -moz-border-radius: 5px 5px 0 0;
-  -webkit-border-radius: 5px 5px 0 0;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #DCE6E6 #DCE6E6 #ddd;
+  background-color: #fff;
+  -moz-border-radius: 0 0 5px 5px;
+  -webkit-border-radius: 0 0 5px 5px;
   position: relative;
 }
 
-.graph #comment_pattern img,
-.graph #keyword_pattern img {
+img.centered {
   top: 50%;
   left: 50%;
   margin-top: -8px;
@@ -139,33 +147,56 @@ h2 {
 .graph .legend {
   font-size: 12px;
   margin: 0;
-  background-color: #f2f2f2;
-  border-width: 0 1px 1px 1px;
+  background-color: #fafafa;
+  border-width: 1px 1px 0 1px;
   border-style: solid;
-  border-color: #e6e6e6;
-  -moz-border-radius: 0 0 5px 5px;
-  -webkit-border-radius: 0 0 5px 5px;
+  border-color: #DCE6E6;
+  -moz-border-radius: 5px 5px 0 0;
+  -webkit-border-radius: 5px 5px 0 0;
   padding: 5px 10px;
   width: 100%;
   font-weight: bold;
-  color: #999;
-  -moz-box-shadow: 0 2px 2px -2px #333;
-  -webkit-box-shadow: 0 2px 2px -2px #333;
+  color: #888;
 }
 
 .graph .legend #n_comments {
   color: #3875D7;
 }
 
+#feeds .listContainer a {
+  font-weight: bold;
+}
+
 #feeds ol {
-  margin: 5px 0;
+  margin: 0;
   padding: 0;
   list-style-type: none;
+  border-width: 0 1px 1px;
+  border-style: solid;
+  border-color: #ddd;
+  min-height: 100px;
+  -moz-border-radius: 0 0 5px 5px;
+  -webkit-border-radius: 0 0 5px 5px;
+  position: relative;
+  background-color: #fff;
 }
 
 #feeds ol li {
-  padding: 5px 0;
-  border-bottom: 1px solid #e6e6e6;
+  padding: 10px;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+#feeds ol li:last-child {
+  border-bottom: none;
+}
+
+#feeds ol li:nth-child(2n) {
+  background-color: #fafafa;
+}
+
+#feeds ol li span {
+  color: #888;
+  font-size: 11px;
 }
 
 .clearfix:after {

@@ -193,7 +193,7 @@ $(window).load(function () {
         .height(function(d) d * 80 / max)
         .left(function() this.index * 10 + padding-3);
     panel.add(pv.Bar)
-      .left(padding+3)
+      .left(0)
       .bottom(padding)
       .width(0)
       .height(0)
@@ -213,7 +213,7 @@ $(window).load(function () {
       .textBaseline('top')
       .text("noon");
     panel.add(pv.Bar)
-      .right(padding+1)
+      .right(0)
       .bottom(padding)
       .width(0)
       .height(0)
