@@ -9,6 +9,8 @@ html,
 body {
   min-height: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -47,7 +49,9 @@ a:hover {
   display: inline-block;
   min-height: 1px;
   float: left;
-  margin: 0 10px; 
+  padding: 0 10px;
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box; 
 }
 
 .c1 {
@@ -76,16 +80,18 @@ a:hover {
 
 .wrapper {
   width: 962px;
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
   margin: 0 auto;
   min-height: 100%;
   background-color: #fff;
+  background-color: #fafafa;
 }
 
 #header {
   width: 100%;
   padding: 10px 0;
+  background-color: #fff;
 }
 
 #header h1 {
@@ -103,7 +109,7 @@ a:hover {
 h2 {
   font-size: 12px;
   background-color: #fafafa;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   color: #888;
   padding: 5px 10px;
   -moz-border-radius: 5px 5px 0 0;
@@ -111,25 +117,28 @@ h2 {
 }
 
 .graph {
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  background-color: #F5FCFC;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  background-color: #F2F7FA;
+  -moz-box-shadow: 0 0 2px #CCD8E3 inset;
+  -webkit-box-shadow: 0 0 2px #CCD8E3 inset;
 }
 
-.graph #comment_pattern,
-.graph #keyword_pattern,
-.graph #tag_cloud {
+#comment_pattern,
+#keyword_pattern {
   width: 100%;
   text-align: center;
   padding: 9px;
   height: 200px;
   border-width: 1px;
   border-style: solid;
-  border-color: #DCE6E6 #DCE6E6 #ddd;
+  border-color: #ccc #CCD8E3 #CCD8E3;
   background-color: #fff;
   -moz-border-radius: 0 0 5px 5px;
   -webkit-border-radius: 0 0 5px 5px;
   position: relative;
+  -moz-box-shadow: 0 2px 2px -2px #CCD8E3;
+  -webkit-box-shadow: 0 2px 2px -2px #CCD8E3;
 }
 
 img.centered {
@@ -142,6 +151,10 @@ img.centered {
 
 #tag_cloud {
   overflow: auto;
+  height: auto;
+  color: #333;
+  min-height: 100px;
+  padding: 10px;
 }
 
 /*
@@ -149,23 +162,65 @@ img.centered {
   display: none; 
 }*/
 
-.graph .legend {
+.legend {
   font-size: 12px;
   margin: 0;
   background-color: #fafafa;
   border-width: 1px 1px 0 1px;
   border-style: solid;
-  border-color: #DCE6E6;
+  border-color: #CCD8E3;
   -moz-border-radius: 5px 5px 0 0;
   -webkit-border-radius: 5px 5px 0 0;
   padding: 5px 10px;
   width: 100%;
   font-weight: bold;
-  color: #888;
+  color: #333;
 }
 
-.graph .legend #n_comments {
+.legend #n_comments {
   color: #3875D7;
+}
+
+.d1,.d2,.d3,.d4,.d5 {
+  background-color: #fff;
+}
+
+#feeds .row.listRow,
+.row.tags {
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  padding: 20px 0;
+}
+
+.row.tags .legend {
+  border-width: 1px 0;
+  border-color: #ccc;
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+}
+
+#feeds .listContainer {
+  min-height: 100px;
+  background-color: #fff;
+}
+
+#feeds .listContainer.border.c2 {
+  border-width: 0 1px;
+  border-style: solid;
+  border-color: #ccc;
+  width: 298px;
+}
+
+#feeds .listContainer h2 {
+  font-size: 12px;
+  background-color: #fafafa;
+  border-color: #ccc;
+  border-width: 1px 0;
+  border-style: solid;
+  color: #333;
+  padding: 5px 10px;
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0
 }
 
 #feeds .listContainer a {
@@ -176,18 +231,15 @@ img.centered {
   margin: 0;
   padding: 0;
   list-style-type: none;
-  border-width: 0 1px 1px;
-  border-style: solid;
-  border-color: #ddd;
   min-height: 100px;
+  position: relative;
   -moz-border-radius: 0 0 5px 5px;
   -webkit-border-radius: 0 0 5px 5px;
-  position: relative;
-  background-color: #fff;
 }
 
 #feeds ol li {
   padding: 10px;
+  background-color: #fff;
   border-bottom: 1px solid #f2f2f2;
 }
 
@@ -202,6 +254,11 @@ img.centered {
 #feeds ol li span {
   color: #888;
   font-size: 11px;
+  display: block;
+}
+
+#footer {
+  color: #888;
 }
 
 .clearfix:after {

@@ -193,15 +193,15 @@ $(window).load(function () {
     let padding = 20;
     panel
       .canvas(document.getElementById("comment_pattern"))
-      .width(10*24+padding*2)
+      .width(15*24+padding*2)
       .height(180)
       .add(pv.Bar)
         .data(hourBins)
         .bottom(padding)
-        .width(8)
+        .width(10)
         .fillStyle(function(d) temperature(this.index/2, d/100).toHex())
-        .height(function(d) d * 80 / max)
-        .left(function() this.index * 10 + padding-3);
+        .height(function(d) d * 125 / max)
+        .left(function() this.index * 15 + padding-3);
     panel.add(pv.Bar)
       .left(0)
       .bottom(padding)
@@ -213,7 +213,7 @@ $(window).load(function () {
       .textBaseline('top')
       .text("early morning");
     panel.add(pv.Bar)
-      .left(10*11+padding)
+      .left(15*11+padding)
       .bottom(padding)
       .width(0)
       .height(0)

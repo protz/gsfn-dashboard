@@ -7,12 +7,24 @@
   <script type="application/javascript;version=1.8" src="js/gs.js"></script>
   <link type="text/css" rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/png" href="favicon1.png" />
+  
+  <script type="text/javascript">
+  jQuery(function(){
+    jQuery(window).bind('ajaxStop', function(){
+      jQuery(".listRow").each(function(i,node){
+        var h = jQuery(node).find('.listContainer').css({ 'height' : '' }).end().height();
+        jQuery(node).find('.listContainer').css({ 'height' : (h-1) });
+      });
+    });
+  });  
+  </script>
+  
 </head>
 <body>
   <audio src="clap.ogg" id="clap"></audio>
   <div class="wrapper clearfix">
     <div id="header" class="row">
-      <h1 class="c4">Roland @MoMo's dashboard</h1>
+      <h1 class="c4">Roland's Get Satisfaction Dashboard</h1>
       <div class="c2 right">
         <span class="status"><img src="i/loader.gif"> </span> <a href="http://getsatisfaction.com/mozilla_messaging/">GS&hearts;</a>
       </div>
@@ -23,45 +35,37 @@
     </div>
     -->
     <div class="graph row">
-      <div class="c2">
+      <div class="c3">
         <div class="legend">
-          Comment pattern today, total = <span id="n_comments"></span>
+          Today's comment pattern, total = <span id="n_comments"></span>
         </div>
         <div id="comment_pattern">
           <img class="centered" src="i/loader.gif">
         </div>
       </div>
-      <div class="c2">
+      <div class="c3">
         <div class="legend">
-          Hot keywords today
+          Today's hot keywords
         </div>
         <div id="keyword_pattern">
           <img class="centered" src="i/loader.gif">
         </div>
       </div>
-      <div class="c2">
-        <div class="legend">
-          Tag cloud for today
-        </div>
-        <div id="tag_cloud">
-          <img class="centered" src="i/loader.gif">
-        </div>
-      </div>
     </div>
     
-    <div id="feeds">
+    <div id="feeds" class="clearfix">
     
-      <div class="row">
+      <div class="listRow row">
         <div class="listContainer c2">
-          <h2>Most active topics in the last 24 hours</h2>
+          <h2>5 most active topics in the last 24 hours</h2>
           <div class="d1">
             <ol>
             <img class="centered" src="i/loader.gif">
             </ol>
           </div>
         </div>
-        <div class="listContainer c2">
-          <h2>Last 5 created topics</h2>
+        <div class="listContainer c2 border">
+          <h2>5 latest created topics</h2>
           <div class="d2">
             <ol>
             <img class="centered" src="i/loader.gif">
@@ -69,7 +73,7 @@
         </div>
         </div>
         <div class="listContainer c2">
-          <h2>Random five created today</h2>
+          <h2>5 random topics created today</h2>
           <div class="d3">
             <ol>
             <img class="centered" src="i/loader.gif">
@@ -78,17 +82,17 @@
         </div>
       </div>
       
-      <div class="row">
+      <div class="listRow row">
         <div class="listContainer c2">
-          <h2>Recently solved topics</h2>
+          <h2>5 most recently solved topics</h2>
           <div class="d4">
             <ol>
             <img class="centered" src="i/loader.gif">
             </ol>
           </div>
         </div>
-        <div class="listContainer c2">
-          <h2>Last active solved topics</h2>
+        <div class="listContainer c2 border">
+          <h2>5 latest active solved topics</h2>
           <div class="d5">
             <ol>
             <img class="centered" src="i/loader.gif">
@@ -99,6 +103,22 @@
     
     </div>
     
+    <div class="row tags">
+      <div class="c6">
+        <div class="legend">
+          Today's tag cloud
+        </div>
+        <div id="tag_cloud">
+          <img class="centered" src="i/loader.gif">
+        </div>
+      </div>
+    </div>
+    
+    <div id="footer" class="row">
+      <div class="c6">Roland's MoMo dashboard 2010</div>
+    </div>
+    
   </div>
+
 </body>
 </html>
