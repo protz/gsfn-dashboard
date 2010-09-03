@@ -1,3 +1,5 @@
+"use strict";
+
 /*  TODO
  * So far, there are a few things that we could improve with this scripts.
  * - Since topics are sorted by last activity, stop going through each topic as
@@ -22,20 +24,9 @@ $(window).load(function () {
 
   let topics = {};
   let tags = {};
-  let REFRESH_INTERVAL = 600*1000;
+  let REFRESH_INTERVAL = 120*1000;
   let hourBins = [];
   let keywordBins = {};
-  /*
-  gmx
-  gmail
-  googlemail
-  yahoo
-  comcast
-  road runner
-  roadrunner
-  msn
-  hotmail
-   */
   let keywords = ["gmx", "g((oogle ?)?)mail", "yahoo", "comcast", "road ?runner", "msn", "hotmail"]
   // Uncomment below to fill some debug values
   /*for each (let i in range(0, 24))
@@ -43,10 +34,19 @@ $(window).load(function () {
   for each (let i in keywords)
     keywordBins[i] = 10 * Math.random();*/
 
-  let today = (new Date());
+  let today = null;
+  let lastUpdate = null;
   function tooOld(date) {
     let d = new Date(date);
-    return ((today - d) > 24 * 3600 * 1000);
+    let r =
+         ((today - d) > 24 * 3600 * 1000)
+      || (d < lastUpdate);
+    return r;
+  }
+
+  function isToday(date) {
+    let d = new Date(date);
+    return ((today - d) < 24 * 3600 * 1000);
   }
 
   // -- Display routines
@@ -103,7 +103,7 @@ $(window).load(function () {
     });
 
     // Get topics created today
-    let todays_topics = sorted_topics.filter(function (topic) { return !tooOld(topic.created_at); });
+    let todays_topics = sorted_topics.filter(function (topic) { return isToday(topic.created_at); });
     // shuffle algorithm
     let l = todays_topics.length;
     for (let i = l - 1; i >= 0; i--) {
@@ -345,6 +345,7 @@ $(window).load(function () {
     if (expected == 0) {
       output();
       graph();
+      lastUpdate = (new Date());
     } else if (expected < 0) {
       console.log("Errrrrrrrrror");
     }
@@ -456,19 +457,25 @@ $(window).load(function () {
       }
     );
   }
+  
+  let firstTime = true;
 
   // Called every ten minutes to update the UI
   function poll () {
     // reset globals
     expected = 1;
-    tags = {};
-    for each (let i in range(0, 24))
-      hourBins[i] = 0;
-    for each (let [, keyword] in Iterator(keywords))
-      keywordBins[keyword] = 0;
+    if (firstTime) {
+      lastUpdate = (new Date(0));
+      tags = {};
+      today = new Date();
+      for each (let i in range(0, 24))
+        hourBins[i] = 0;
+      for each (let [, keyword] in Iterator(keywords))
+        keywordBins[keyword] = 0;
+      firstTime = false;
+    }
 
     getTopics(1);
-
     setTimeout(poll, REFRESH_INTERVAL);
   }
 
