@@ -40,7 +40,7 @@ $(window).load(function () {
   msn
   hotmail
    */
-  let keywords = ["gmx", "g((oogle)? ?)mail", "yahoo", "comcast", "road ?runner", "msn", "hotmail"]
+  let keywords = ["gmx", "g((oogle ?)?)mail", "yahoo", "comcast", "road ?runner", "msn", "hotmail"]
   // Uncomment below to fill some debug values
   /*for each (let i in range(0, 24))
     hourBins[i] = Math.random() * 100;
@@ -283,8 +283,8 @@ $(window).load(function () {
   }
 
   function cleanup (s) {
-    let r = s.replace(/(add-ons?|addons|emails|e-mails?|!|messages|are|can|with|the|that|not|and|can't|will|(^\d+$))/g, function (s) {
-      switch (s) {
+    let r = s.replace(/(add-ons?|addons|emails|e-mails?|!|messages|but|are|can|with|the|that|not|and|can't|will|(^\d+$))/g, function (s2) {
+      switch (s2) {
         case "add-ons":
         case "add-on":
         case "addons":
@@ -298,7 +298,11 @@ $(window).load(function () {
         case "messages":
           return "message";
         default:
-          return "";
+          // avoid canonical -> onical
+          if (s2.length == s.length)
+            return "";
+          else
+            return s2;
       }
     });
     return (r.length > 2 ? r : "");
