@@ -1,12 +1,8 @@
 /*  TODO
  * So far, there are a few things that we could improve with this scripts.
- * - Use a cache. If last time we checked the topic, it had N replies, and
- *   10 minutes later, it still has N replies, then we don't need to go
- *   through the N replies to figure out that the number of replies today
- *   hasn't changed (I assume it's not possible to delete a reply, but that
- *   doesn' matter much).
- * - Search keywords inside tags for topics (requires more queries)
- *
+ * - Since topics are sorted by last activity, stop going through each topic as
+ *   soon as the last modification date is before the last update. Should make
+ *   subsequent updates very cheap..
  */
 if (typeof console === 'undefined' || !console.log) {
   window.console = { log: function () {}};
