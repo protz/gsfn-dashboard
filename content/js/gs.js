@@ -1,5 +1,3 @@
-"use strict";
-
 /*  TODO
  * So far, there are a few things that we could improve with this scripts.
  * - Since topics are sorted by last activity, stop going through each topic as
