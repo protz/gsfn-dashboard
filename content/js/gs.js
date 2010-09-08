@@ -147,6 +147,11 @@ $(window).load(function () {
     let recently_solved_topics = solved_topics.filter(function (topic) { return topic.just_solved; });
     $ol = $(".d4").find("ol");
     $.each(recently_solved_topics, function (i, topic) {
+      // So it goes like this:
+      // - topic is found as just solved, so getTopics marks topic.just_solved = true
+      // - we arrive here, iterate on this topic, add it in the list
+      // - so that next round it's not added again, we remove the "just_solved" flag
+      topic.just_solved = false;
       let date = new Date().toLocaleFormat("%I:%M%p");
       $ol.prepend(
         $("<li />").append(
@@ -344,6 +349,9 @@ $(window).load(function () {
       output();
       graph();
       lastUpdate = (new Date());
+      // Otherwise, on slow networks, the initial update takes too long, and a
+      //  new update kicks in in the meanwhile, and this never works out.
+      setTimeout(poll, REFRESH_INTERVAL);
     } else if (expected < 0) {
       console.log("Errrrrrrrrror");
     }
@@ -474,7 +482,6 @@ $(window).load(function () {
     }
 
     getTopics(1);
-    setTimeout(poll, REFRESH_INTERVAL);
   }
 
   poll();
